@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RobuxStore Sachi - Premium Top Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: {
+                        dark: { 900: '#0f1115', 800: '#181a20', 700: '#2b2f36' },
+                        brand: { 400: '#f472b6', 500: '#ec4899', 600: '#db2777' } // Pink Accent
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .hide { display: none !important; }
+        .glass { background: rgba(24, 26, 32, 0.7); backdrop-filter: blur(10px); }
+        .selected-item { border-color: #ec4899 !important; background: rgba(236, 72, 153, 0.05) !important; box-shadow: 0 0 15px rgba(236, 72, 153, 0.2); }
+    </style>
+</head>
+<body class="bg-dark-900 text-slate-200 font-sans min-h-screen overflow-x-hidden selection:bg-brand-500/30">
+
+    <div id="auth-view" class="min-h-screen flex items-center justify-center p-4 relative">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-600 rounded-full mix-blend-screen filter blur-[120px] opacity-20"></div>
+        
+        <div class="w-full max-w-md z-10">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-gradient-to-br from-brand-400 to-brand-600 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-brand-500/40 text-white text-2xl">
+                    <i class="fas fa-gem"></i>
+                </div>
+                <h1 class="text-3xl font-extrabold text-white tracking-tight">SACHII <span class="text-brand-500">ROBUX STORE</span></h1>
+                <p class="text-slate-400 text-sm mt-1">Platform Top Up Robux Terpercaya</p>
+            </div>
+
+            <div id="login-form-container" class="glass border border-dark-700 p-8 rounded-3xl shadow-2xl">
+                <form id="login-form" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-2">USERNAME</label>
+                        <input type="text" id="log-username" required class="w-full bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none transition" placeholder="admin / demo">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-2">PASSWORD</label>
+                        <input type="password" id="log-password" required class="w-full bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none transition" placeholder="123">
+                    </div>
+                    <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 rounded-xl transition mt-4">MASUK</button>
+                </form>
+                <p class="text-center text-sm text-slate-400 mt-6">Belum punya akun? <a href="#" onclick="switchAuth()" class="text-brand-500 font-bold hover:underline">Daftar</a></p>
+            </div>
+
+            <div id="register-form-container" class="glass border border-dark-700 p-8 rounded-3xl shadow-2xl hide">
+                <form id="register-form" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-2">NAMA LENGKAP</label>
+                        <input type="text" id="reg-name" required class="w-full bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-2">NOMOR WHATSAPP</label>
+                        <input type="number" id="reg-phone" required class="w-full bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none transition" placeholder="08...">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-2">USERNAME</label>
+                        <input type="text" id="reg-username" required class="w-full bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-400 mb-2">PASSWORD</label>
+                        <input type="password" id="reg-password" required class="w-full bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none transition">
+                    </div>
+                    <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 rounded-xl transition mt-4">DAFTAR SEKARANG</button>
+                </form>
+                <p class="text-center text-sm text-slate-400 mt-6">Sudah punya akun? <a href="#" onclick="switchAuth()" class="text-brand-500 font-bold hover:underline">Masuk</a></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-layout" class="hide min-h-screen flex flex-col">
+        <nav class="glass sticky top-0 z-50 border-b border-dark-700">
+            <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-2 font-extrabold text-xl">
+                    <i class="fas fa-gem text-brand-500"></i> ROBUX<span class="text-brand-500">STORE</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm font-semibold bg-dark-800 px-4 py-1.5 rounded-full border border-dark-700" id="role-badge"></span>
+                    <button onclick="logout()" class="text-sm bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white px-4 py-1.5 rounded-full transition font-semibold">
+                        <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <main id="user-view" class="hide flex-1 max-w-7xl mx-auto w-full px-4 py-8">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-white">Halo, <span id="u-name" class="text-brand-500"></span>! 👋</h2>
+                <p class="text-slate-400 text-sm">Mau beli Robux berapa hari ini?</p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-dark-800 p-6 rounded-2xl border border-dark-700 shadow-xl">
+                        <div class="flex gap-3 items-center mb-4">
+                            <div class="bg-brand-500/20 text-brand-500 w-8 h-8 rounded-full flex items-center justify-center font-bold">1</div>
+                            <h3 class="font-bold text-lg">Target Akun Roblox</h3>
+                        </div>
+                        <input type="text" id="target-roblox" placeholder="Masukkan Username Roblox..." class="w-full bg-dark-900 border border-dark-700 rounded-xl px-4 py-3 text-sm focus:border-brand-500 outline-none transition">
+                    </div>
+
+                    <div class="bg-dark-800 p-6 rounded-2xl border border-dark-700 shadow-xl">
+                        <div class="flex gap-3 items-center mb-4">
+                            <div class="bg-brand-500/20 text-brand-500 w-8 h-8 rounded-full flex items-center justify-center font-bold">2</div>
+                            <h3 class="font-bold text-lg">Pilih Nominal Robux</h3>
+                        </div>
+                        <div id="product-container" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            </div>
+                    </div>
+                </div>
+
+                <div class="bg-dark-800 p-6 rounded-2xl border border-dark-700 shadow-xl h-fit sticky top-24">
+                    <h3 class="font-bold text-lg border-b border-dark-700 pb-3 mb-4">Ringkasan Order</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between text-slate-400"><span>No. WA Anda:</span> <span id="u-phone" class="font-semibold text-white"></span></div>
+                        <div class="flex justify-between text-slate-400"><span>Username:</span> <span id="summary-user" class="font-semibold text-white">-</span></div>
+                        <div class="flex justify-between text-slate-400"><span>Item:</span> <span id="summary-item" class="font-semibold text-brand-400">Belum dipilih</span></div>
+                        <div class="flex justify-between text-slate-400 border-t border-dark-700 pt-3 mt-3"><span>Harga:</span> <span id="summary-price" class="font-semibold text-white">Rp 0</span></div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-dashed border-dark-700 flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-500">TOTAL BAYAR</span>
+                        <span id="summary-total" class="text-2xl font-extrabold text-white">Rp 0</span>
+                    </div>
+                    <button onclick="processOrder()" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-3.5 rounded-xl mt-6 shadow-lg shadow-brand-500/20 transition active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fab fa-whatsapp text-lg"></i> Checkout via WA
+                    </button>
+                    <p class="text-[10px] text-center text-slate-500 mt-3">*Invoice PDF akan otomatis terunduh</p>
+                </div>
+            </div>
+        </main>
+
+        <main id="admin-view" class="hide flex-1 max-w-7xl mx-auto w-full px-4 py-8">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Admin Panel ⚙️</h2>
+                    <p class="text-slate-400 text-sm">Kelola harga produk dan data pengguna.</p>
+                </div>
+            </div>
+
+            <div class="grid lg:grid-cols-12 gap-6">
+                <div class="lg:col-span-8 bg-dark-800 rounded-2xl border border-dark-700 p-6 shadow-xl">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-lg"><i class="fas fa-users text-brand-500 mr-2"></i>Data Pengguna</h3>
+                        <input type="text" id="search-user" oninput="searchUser()" placeholder="Cari username/nama..." class="bg-dark-900 border border-dark-700 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-brand-500">
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-400">
+                            <thead class="bg-dark-900 text-xs uppercase font-semibold text-white border-b border-dark-700">
+                                <tr>
+                                    <th class="px-4 py-3">Nama</th>
+                                    <th class="px-4 py-3">Username</th>
+                                    <th class="px-4 py-3">No WhatsApp</th>
+                                    <th class="px-4 py-3">Role</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-table-body" class="divide-y divide-dark-700">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-4 bg-dark-800 rounded-2xl border border-dark-700 p-6 shadow-xl h-fit">
+                    <h3 class="font-bold text-lg mb-4"><i class="fas fa-tags text-brand-500 mr-2"></i>Pengaturan Harga</h3>
+                    <div id="admin-product-container" class="space-y-3">
+                        </div>
+                    <button onclick="savePrices()" class="w-full mt-4 bg-brand-500 hover:bg-brand-600 text-white font-bold py-2 rounded-xl transition shadow-lg shadow-brand-500/20">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 1. STATE & DATABASE SIMULATION
+        let usersDB = [
+            { id: 1, name: "Administrator", username: "admin", password: "123", phone: "081234567890", role: "admin" },
+            { id: 2, name: "Customer Satu", username: "demo", password: "123", phone: "089876543210", role: "user" }
+        ];
+
+        let productsDB = [
+            { id: 'R1', name: '400 Robux', price: 65000 },
+            { id: 'R2', name: '800 Robux', price: 125000 },
+            { id: 'R3', name: '1700 Robux', price: 250000 },
+            { id: 'R4', name: '4500 Robux', price: 650000 },
+            { id: 'R5', name: '10000 Robux', price: 1400000 },
+        ];
+
+        let currentUser = null;
+        let selectedProduct = null;
+        const ADMIN_WA_NUMBER = "6281234567890"; // Ganti dengan nomor WA Admin
+
+        // 2. DOM ELEMENTS
+        const views = {
+            auth: document.getElementById('auth-view'),
+            layout: document.getElementById('main-layout'),
+            user: document.getElementById('user-view'),
+            admin: document.getElementById('admin-view'),
+            loginForm: document.getElementById('login-form-container'),
+            regForm: document.getElementById('register-form-container')
+        };
+
+        // 3. AUTHENTICATION LOGIC
+        function switchAuth() {
+            views.loginForm.classList.toggle('hide');
+            views.regForm.classList.toggle('hide');
+        }
+
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const u = document.getElementById('log-username').value;
+            const p = document.getElementById('log-password').value;
+            const user = usersDB.find(x => x.username === u && x.password === p);
+            
+            if(user) login(user);
+            else alert("Username atau password salah!");
+        });
+
+        document.getElementById('register-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const n = document.getElementById('reg-name').value;
+            const ph = document.getElementById('reg-phone').value;
+            const u = document.getElementById('reg-username').value;
+            const p = document.getElementById('reg-password').value;
+
+            if(usersDB.find(x => x.username === u)) return alert("Username sudah dipakai!");
+
+            const newUser = { id: Date.now(), name: n, phone: ph, username: u, password: p, role: "user" };
+            usersDB.push(newUser);
+            alert("Pendaftaran berhasil! Silakan masuk otomatis.");
+            login(newUser);
+        });
+
+        function login(user) {
+            currentUser = user;
+            views.auth.classList.add('hide');
+            views.layout.classList.remove('hide');
+
+            document.getElementById('role-badge').innerHTML = user.role === 'admin' 
+                ? '<i class="fas fa-shield-alt text-brand-500 mr-1"></i> Admin Panel' 
+                : '<i class="fas fa-user text-brand-500 mr-1"></i> Member';
+
+            if(user.role === 'admin') {
+                views.user.classList.add('hide');
+                views.admin.classList.remove('hide');
+                renderAdminDashboard();
+            } else {
+                views.admin.classList.add('hide');
+                views.user.classList.remove('hide');
+                renderUserDashboard();
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            selectedProduct = null;
+            document.getElementById('login-form').reset();
+            views.layout.classList.add('hide');
+            views.auth.classList.remove('hide');
+        }
+
+        // 4. USER DASHBOARD LOGIC
+        function renderUserDashboard() {
+            document.getElementById('u-name').textContent = currentUser.name;
+            document.getElementById('u-phone').textContent = currentUser.phone;
+            
+            const container = document.getElementById('product-container');
+            container.innerHTML = '';
+            
+            productsDB.forEach(prod => {
+                container.innerHTML += `
+                    <div onclick="selectProduct('${prod.id}')" id="card-${prod.id}" class="product-card bg-dark-900 border border-dark-700 rounded-xl p-4 cursor-pointer hover:border-brand-500 transition">
+                        <div class="font-bold text-white text-sm"><i class="fas fa-gem text-brand-500 mr-1 text-xs"></i> ${prod.name}</div>
+                        <div class="text-xs text-slate-400 mt-1">${formatRp(prod.price)}</div>
+                    </div>
+                `;
+            });
+        }
+
+        document.getElementById('target-roblox').addEventListener('input', (e) => {
+            document.getElementById('summary-user').textContent = e.target.value || '-';
+        });
+
+        function selectProduct(id) {
+            document.querySelectorAll('.product-card').forEach(c => c.classList.remove('selected-item'));
+            document.getElementById('card-'+id).classList.add('selected-item');
+            
+            selectedProduct = productsDB.find(p => p.id === id);
+            document.getElementById('summary-item').textContent = selectedProduct.name;
+            document.getElementById('summary-price').textContent = formatRp(selectedProduct.price);
+            document.getElementById('summary-total').textContent = formatRp(selectedProduct.price);
+        }
+
+        // 5. INVOICE PDF & WHATSAPP LOGIC
+        async function processOrder() {
+            const rbxUser = document.getElementById('target-roblox').value;
+            if(!rbxUser) return alert("Isi Target Username Roblox dulu!");
+            if(!selectedProduct) return alert("Pilih nominal Robux!");
+
+            const invoiceId = "INV-" + Date.now();
+            
+            // Generate PDF menggunakan jsPDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Styling PDF sederhana
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(22);
+            doc.setTextColor(236, 72, 153); // Pink color
+            doc.text("ROBUXSTORE INVOICE", 20, 20);
+            
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont("helvetica", "normal");
+            doc.text(`No. Invoice : ${invoiceId}`, 20, 35);
+            doc.text(`Tanggal     : ${new Date().toLocaleString()}`, 20, 42);
+            
+            doc.line(20, 48, 190, 48); // Garis
+            
+            doc.text("Detail Pelanggan:", 20, 60);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Nama Pemesan : ${currentUser.name}`, 20, 68);
+            doc.text(`No. WhatsApp : ${currentUser.phone}`, 20, 75);
+            doc.text(`Target Akun  : ${rbxUser}`, 20, 82);
+            
+            doc.setFont("helvetica", "normal");
+            doc.text("Detail Pembelian:", 20, 100);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Item         : ${selectedProduct.name}`, 20, 108);
+            doc.text(`Total Bayar  : ${formatRp(selectedProduct.price)}`, 20, 115);
+
+            doc.line(20, 125, 190, 125); // Garis
+            doc.setFont("helvetica", "italic");
+            doc.text("Terima kasih telah berbelanja di RobuxStore!", 20, 135);
+
+            // Unduh PDF
+            doc.save(`Invoice_${invoiceId}.pdf`);
+
+            // Persiapkan teks WhatsApp (menggunakan parameter URL)
+            const waText = `Halo Admin RobuxStore! 👋%0ASaya ingin memproses pesanan saya:%0A%0A*ID Invoice:* ${invoiceId}%0A*Nama:* ${currentUser.name}%0A*No HP (Akun):* ${currentUser.phone}%0A*Username Roblox Target:* ${rbxUser}%0A*Item:* ${selectedProduct.name}%0A*Total Bayar:* ${formatRp(selectedProduct.price)}%0A%0AMohon info nomor rekening/QRIS untuk pembayaran. Terima kasih.`;
+
+            // Arahkan ke WA setelah jeda sebentar agar PDF terunduh dulu
+            setTimeout(() => {
+                window.open(`https://wa.me/${ADMIN_WA_NUMBER}?text=${waText}`, '_blank');
+                // Reset form
+                document.getElementById('target-roblox').value = '';
+                document.getElementById('summary-user').textContent = '-';
+                selectedProduct = null;
+                renderUserDashboard(); // re-render to reset highlights
+                document.getElementById('summary-item').textContent = 'Belum dipilih';
+                document.getElementById('summary-price').textContent = 'Rp 0';
+                document.getElementById('summary-total').textContent = 'Rp 0';
+            }, 1000);
+        }
+
+        // 6. ADMIN DASHBOARD LOGIC
+        function renderAdminDashboard() {
+            renderUserTable(usersDB);
+            renderPriceEditor();
+        }
+
+        function renderUserTable(data) {
+            const tbody = document.getElementById('user-table-body');
+            tbody.innerHTML = '';
+            data.forEach(u => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-dark-800 transition">
+                        <td class="px-4 py-3 font-medium text-white">${u.name}</td>
+                        <td class="px-4 py-3">@${u.username}</td>
+                        <td class="px-4 py-3"><a href="https://wa.me/62${u.phone.substring(1)}" target="_blank" class="text-brand-400 hover:underline"><i class="fab fa-whatsapp"></i> ${u.phone}</a></td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 rounded-md text-[10px] font-bold ${u.role === 'admin' ? 'bg-brand-500/20 text-brand-500' : 'bg-blue-500/20 text-blue-400'} uppercase">
+                                ${u.role}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function searchUser() {
+            const query = document.getElementById('search-user').value.toLowerCase();
+            const filtered = usersDB.filter(u => u.name.toLowerCase().includes(query) || u.username.toLowerCase().includes(query));
+            renderUserTable(filtered);
+        }
+
+        function renderPriceEditor() {
+            const container = document.getElementById('admin-product-container');
+            container.innerHTML = '';
+            productsDB.forEach((p, index) => {
+                container.innerHTML += `
+                    <div class="bg-dark-900 p-3 rounded-lg flex justify-between items-center border border-dark-700">
+                        <span class="text-sm font-semibold text-white">${p.name}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-slate-400">Rp</span>
+                            <input type="number" id="edit-price-${index}" value="${p.price}" class="w-24 bg-dark-800 border border-dark-700 rounded px-2 py-1 text-sm outline-none focus:border-brand-500 text-right">
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function savePrices() {
+            productsDB.forEach((p, index) => {
+                const newPrice = document.getElementById(`edit-price-${index}`).value;
+                p.price = parseInt(newPrice);
+            });
+            alert("Harga berhasil diperbarui secara dinamis!");
+            // Jika ada sistem database beneran, disini fetch/post ke API dilakukan
+        }
+
+        // Helper
+        function formatRp(angka) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+        }
+    </script>
+</body>
+</html>
