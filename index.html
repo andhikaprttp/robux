@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RobuxStore Sachi - Premium Top Up</title>
+    <title>SACHI RobuxStore - Premium Top Up</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -38,7 +38,7 @@
                 <div class="w-16 h-16 bg-gradient-to-br from-brand-400 to-brand-600 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-brand-500/40 text-white text-2xl">
                     <i class="fas fa-gem"></i>
                 </div>
-                <h1 class="text-3xl font-extrabold text-white tracking-tight">SACHII <span class="text-brand-500">ROBUX STORE</span></h1>
+                <h1 class="text-3xl font-extrabold text-white tracking-tight">SACHI<span class="text-brand-500">ROBUX STORE</span></h1>
                 <p class="text-slate-400 text-sm mt-1">Platform Top Up Robux Terpercaya</p>
             </div>
 
@@ -86,7 +86,7 @@
         <nav class="glass sticky top-0 z-50 border-b border-dark-700">
             <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
                 <div class="flex items-center gap-2 font-extrabold text-xl">
-                    <i class="fas fa-gem text-brand-500"></i> ROBUX<span class="text-brand-500">STORE</span>
+                    <i class="fas fa-gem text-brand-500"></i>SACHI ROBUX<span class="text-brand-500">STORE</span>
                 </div>
                 <div class="flex items-center gap-4">
                     <span class="text-sm font-semibold bg-dark-800 px-4 py-1.5 rounded-full border border-dark-700" id="role-badge"></span>
@@ -135,10 +135,10 @@
                         <span class="text-xs font-bold text-slate-500">TOTAL BAYAR</span>
                         <span id="summary-total" class="text-2xl font-extrabold text-white">Rp 0</span>
                     </div>
-                    <button onclick="processOrder()" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-3.5 rounded-xl mt-6 shadow-lg shadow-brand-500/20 transition active:scale-95 flex items-center justify-center gap-2">
-                        <i class="fab fa-whatsapp text-lg"></i> Checkout via WA
+                    <button onclick="processOrder()" id="btn-checkout" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-3.5 rounded-xl mt-6 shadow-lg shadow-brand-500/20 transition active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fab fa-whatsapp text-lg"></i> Checkout Sekarang
                     </button>
-                    <p class="text-[10px] text-center text-slate-500 mt-3">*Invoice PDF akan otomatis terunduh</p>
+                    <p class="text-[10px] text-center text-slate-500 mt-3">*Data otomatis terkirim ke Bot & Invoice diunduh</p>
                 </div>
             </div>
         </main>
@@ -149,6 +149,9 @@
                     <h2 class="text-2xl font-bold text-white">Admin Panel ⚙️</h2>
                     <p class="text-slate-400 text-sm">Kelola harga produk dan data pengguna.</p>
                 </div>
+                <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-4 py-2 rounded-xl transition flex items-center gap-2 text-sm shadow-lg shadow-emerald-600/20">
+                    <i class="fas fa-file-excel"></i> Export CSV
+                </button>
             </div>
 
             <div class="grid lg:grid-cols-12 gap-6">
@@ -189,7 +192,7 @@
         // 1. STATE & DATABASE SIMULATION
         let usersDB = [
             { id: 1, name: "Administrator", username: "admin", password: "123", phone: "081234567890", role: "admin" },
-            { id: 2, name: "Customer Satu", username: "demo", password: "123", phone: "089876543210", role: "user" }
+            { id: 2, name: "Andhika Pratama", username: "demo", password: "123", phone: "089876543210", role: "user" }
         ];
 
         let productsDB = [
@@ -202,7 +205,10 @@
 
         let currentUser = null;
         let selectedProduct = null;
-        const ADMIN_WA_NUMBER = "6281234567890"; // Ganti dengan nomor WA Admin
+        
+        // KONFIGURASI PENTING
+        const ADMIN_WA_NUMBER = "6281234567890"; // Nomor WhatsApp Admin
+        const DISCORD_WEBHOOK = "YOUR_DISCORD_WEBHOOK_URL_HERE"; // Ganti dengan URL Webhook kamu
 
         // 2. DOM ELEMENTS
         const views = {
@@ -305,19 +311,21 @@
             document.getElementById('summary-total').textContent = formatRp(selectedProduct.price);
         }
 
-        // 5. INVOICE PDF & WHATSAPP LOGIC
+        // 5. INVOICE PDF, DISCORD WEBHOOK, & WHATSAPP LOGIC
         async function processOrder() {
             const rbxUser = document.getElementById('target-roblox').value;
             if(!rbxUser) return alert("Isi Target Username Roblox dulu!");
             if(!selectedProduct) return alert("Pilih nominal Robux!");
 
             const invoiceId = "INV-" + Date.now();
+            const btn = document.getElementById('btn-checkout');
+            const btnOriginalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
             
-            // Generate PDF menggunakan jsPDF
+            // --- A. Generate PDF (jsPDF) ---
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             
-            // Styling PDF sederhana
             doc.setFont("helvetica", "bold");
             doc.setFontSize(22);
             doc.setTextColor(236, 72, 153); // Pink color
@@ -329,7 +337,7 @@
             doc.text(`No. Invoice : ${invoiceId}`, 20, 35);
             doc.text(`Tanggal     : ${new Date().toLocaleString()}`, 20, 42);
             
-            doc.line(20, 48, 190, 48); // Garis
+            doc.line(20, 48, 190, 48);
             
             doc.text("Detail Pelanggan:", 20, 60);
             doc.setFont("helvetica", "bold");
@@ -343,24 +351,55 @@
             doc.text(`Item         : ${selectedProduct.name}`, 20, 108);
             doc.text(`Total Bayar  : ${formatRp(selectedProduct.price)}`, 20, 115);
 
-            doc.line(20, 125, 190, 125); // Garis
+            doc.line(20, 125, 190, 125);
             doc.setFont("helvetica", "italic");
-            doc.text("Terima kasih telah berbelanja di RobuxStore!", 20, 135);
+            doc.text("Terima kasih telah berbelanja di Sachi RobuxStore!", 20, 135);
 
-            // Unduh PDF
             doc.save(`Invoice_${invoiceId}.pdf`);
 
-            // Persiapkan teks WhatsApp (menggunakan parameter URL)
-            const waText = `Halo Admin RobuxStore! 👋%0ASaya ingin memproses pesanan saya:%0A%0A*ID Invoice:* ${invoiceId}%0A*Nama:* ${currentUser.name}%0A*No HP (Akun):* ${currentUser.phone}%0A*Username Roblox Target:* ${rbxUser}%0A*Item:* ${selectedProduct.name}%0A*Total Bayar:* ${formatRp(selectedProduct.price)}%0A%0AMohon info nomor rekening/QRIS untuk pembayaran. Terima kasih.`;
+            // --- B. Kirim Notifikasi ke Discord Webhook ---
+            if (DISCORD_WEBHOOK !== "https://discord.com/api/webhooks/1498623067776352408/U357cypbFCOnrkJUhXe-uYxKfQatmMnmcJjugWxzyRAaaklr32O_Kdo493NIX7UlTjZP") {
+                const embedMessage = {
+                    username: "Sachi RobuxStore Bot",
+                    avatar_url: "https://upload.wikimedia.org/wikipedia/commons/2/2a/Roblox_logo.png",
+                    embeds: [{
+                        title: `💎 PESANAN ROBUX MASUK! (${invoiceId})`,
+                        color: 15418782,
+                        fields: [
+                            { name: "👤 Nama User", value: currentUser.name, inline: true },
+                            { name: "📱 No WhatsApp", value: currentUser.phone, inline: true },
+                            { name: "🎮 Target Roblox", value: `**${rbxUser}**`, inline: false },
+                            { name: "🛍️ Paket Item", value: selectedProduct.name, inline: true },
+                            { name: "💰 Total Bayar", value: formatRp(selectedProduct.price), inline: true }
+                        ],
+                        footer: { text: "RobuxStore by Andhika Journey" },
+                        timestamp: new Date().toISOString()
+                    }]
+                };
 
-            // Arahkan ke WA setelah jeda sebentar agar PDF terunduh dulu
+                try {
+                    await fetch(DISCORD_WEBHOOK, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(embedMessage)
+                    });
+                } catch (err) {
+                    console.error("Gagal mengirim ke Discord:", err);
+                }
+            }
+
+            // --- C. Redirect ke WhatsApp ---
+            const waText = `Halo Admin Sachi RobuxStore! 👋%0ASaya ingin memproses pesanan saya:%0A%0A*ID Invoice:* ${invoiceId}%0A*Nama:* ${currentUser.name}%0A*No HP (Akun):* ${currentUser.phone}%0A*Username Roblox Target:* ${rbxUser}%0A*Item:* ${selectedProduct.name}%0A*Total Bayar:* ${formatRp(selectedProduct.price)}%0A%0AMohon info nomor rekening/QRIS untuk pembayaran. Terima kasih.`;
+
             setTimeout(() => {
                 window.open(`https://wa.me/${ADMIN_WA_NUMBER}?text=${waText}`, '_blank');
-                // Reset form
+                
+                // Reset Form
+                btn.innerHTML = btnOriginalText;
                 document.getElementById('target-roblox').value = '';
                 document.getElementById('summary-user').textContent = '-';
                 selectedProduct = null;
-                renderUserDashboard(); // re-render to reset highlights
+                renderUserDashboard();
                 document.getElementById('summary-item').textContent = 'Belum dipilih';
                 document.getElementById('summary-price').textContent = 'Rp 0';
                 document.getElementById('summary-total').textContent = 'Rp 0';
@@ -420,7 +459,25 @@
                 p.price = parseInt(newPrice);
             });
             alert("Harga berhasil diperbarui secara dinamis!");
-            // Jika ada sistem database beneran, disini fetch/post ke API dilakukan
+        }
+
+        // Fitur Export Data CSV
+        function exportToCSV() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Nama Lengkap,Username,No WhatsApp,Role Akun\n";
+
+            usersDB.forEach(user => {
+                let row = `${user.name},${user.username},${user.phone},${user.role}`;
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Data_Pengguna_RobuxStore.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         // Helper
